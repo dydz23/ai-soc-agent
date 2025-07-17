@@ -29,46 +29,46 @@ export default async function handler(req, res) {
 
 // Import the handler logic from each file
 async function handleAbuseIPDB(req, res) {
-  const module = await import('./threat-intel/abuseipdb.js');
+  const module = await import('./backup/abuseipdb.js');
   return module.default(req, res);
 }
 
 async function handleIPInfo(req, res) {
-  const module = await import('./threat-intel/ipinfo.js');
+  const module = await import('./backup/ipinfo.js');
   return module.default(req, res);
 }
 
 async function handleMalwareBazaar(req, res) {
-  const module = await import('./threat-intel/malwarebazaar.js');
+  const module = await import('./backup/malwarebazaar.js');
   return module.default(req, res);
 }
 
 async function handleOTX(req, res) {
-  const module = await import('./threat-intel/otx.js');
+  const module = await import('./backup/otx.js');
   return module.default(req, res);
 }
 
 async function handleShodan(req, res) {
-  const module = await import('./threat-intel/shodan.js');
+  const module = await import('./backup/shodan.js');
   return module.default(req, res);
 }
 
 async function handleThreatFox(req, res) {
-  const module = await import('./threat-intel/threatfox.js');
+  const module = await import('./backup/threatfox.js');
   return module.default(req, res);
 }
 
 async function handleURLhaus(req, res) {
-  const module = await import('./threat-intel/urlhaus.js');
+  const module = await import('./backup/urlhaus.js');
   return module.default(req, res);
 }
 
 async function handleURLscan(req, res) {
-  const module = await import('./threat-intel/urlscan.js');
+  const module = await import('./backup/urlscan.js');
   return module.default(req, res);
 }
 
 async function handleVirusTotal(req, res) {
-  const module = await import('./threat-intel/virustotal.js');
+  const module = await import('./backup/virustotal.js');
   return module.default(req, res);
 }
