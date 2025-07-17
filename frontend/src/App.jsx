@@ -234,7 +234,8 @@ function App() {
     setError(null);
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/analyze', {
+      // Updated to use Vercel serverless function
+      const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,6 +267,9 @@ function App() {
         <p className="text-gray-600 mt-1 text-sm">
           AI-powered threat intelligence analysis with 9 integrated sources
         </p>
+        <div className="text-xs text-gray-500 mt-1">
+          ⚡ Powered by Vercel Serverless & Claude Sonnet
+        </div>
       </header>
 
       <AnalyzeForm onAnalyze={handleAnalyze} loading={loading} />
