@@ -1,5 +1,6 @@
 // api/threat-intel.js
 // Consolidated threat intelligence functions
+import fetch from 'node-fetch';
 
 // VirusTotal Function
 export async function checkVirusTotal(ioc) {
@@ -619,48 +620,76 @@ export async function checkVirusTotal(ioc) {
     }
   }
   
+  // Helper function to resolve domain to IP
+  export async function resolveDomain(domain) {
+    try {
+      // Use DNS over HTTPS as a fallback since Node.js dns module might not be available
+      const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=A`, {
+        headers: {
+          'Accept': 'application/dns-json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.Answer && data.Answer.length > 0) {
+          return data.Answer[0].data;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('DNS resolution error:', error);
+      return null;
+    }
+  }
+  
   // Main handler for threat-intel endpoint
   export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
-  
-    const { source, ioc, iocType, originalDomain } = req.body;
+    // Support both GET and POST methods
+    const { source, query, type, domain } = req.query || {};
+    const { source: bodySource, ioc, iocType, originalDomain } = req.body || {};
     
-    if (!source || !ioc) {
+    // Use either query params or body params
+    const finalSource = source || bodySource;
+    const finalIoc = query || ioc;
+    const finalIocType = type || iocType;
+    const finalDomain = domain || originalDomain;
+    
+    if (!finalSource || !finalIoc) {
       return res.status(400).json({ error: 'Source and IOC parameters required' });
     }
   
     let result;
     
     try {
-      switch (source) {
+      switch (finalSource) {
         case 'virustotal':
-          result = await checkVirusTotal(ioc);
+          result = await checkVirusTotal(finalIoc);
           break;
         case 'abuseipdb':
-          result = await checkIP(ioc, originalDomain);
+          result = await checkIP(finalIoc, finalDomain);
           break;
         case 'shodan':
-          result = await lookupShodan(ioc);
+          result = await lookupShodan(finalIoc);
           break;
         case 'otx':
-          result = await lookupOTX(ioc, iocType);
+          result = await lookupOTX(finalIoc, finalIocType);
           break;
         case 'threatfox':
-          result = await lookupThreatFox(ioc);
+          result = await lookupThreatFox(finalIoc);
           break;
         case 'urlscan':
-          result = await lookupURLScan(ioc);
+          result = await lookupURLScan(finalIoc);
           break;
         case 'urlhaus':
-          result = await lookupURLHaus(ioc);
+          result = await lookupURLHaus(finalIoc);
           break;
         case 'malwarebazaar':
-          result = await lookupMalwareBazaar(ioc);
+          result = await lookupMalwareBazaar(finalIoc);
           break;
         case 'ipinfo':
-          result = await lookupIPInfo(ioc, originalDomain);
+          result = await lookupIPInfo(finalIoc, finalDomain);
           break;
         default:
           return res.status(400).json({ error: 'Unsupported threat intelligence source' });
@@ -668,7 +697,7 @@ export async function checkVirusTotal(ioc) {
       
       return res.status(200).json(result);
     } catch (error) {
-      console.error(`Error in ${source}:`, error);
+      console.error(`Error in ${finalSource}:`, error);
       return res.status(500).json({ error: error.message });
     }
   }

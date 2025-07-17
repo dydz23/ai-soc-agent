@@ -2,7 +2,7 @@
 import fetch from 'node-fetch';
 import dns from 'dns';
 import { promisify } from 'util';
-import { resolveDomain } from './threat-intel';
+import { resolveDomain } from './threat-intel.js';
 
 // Promisify DNS lookup
 const dnsLookup = promisify(dns.lookup);
