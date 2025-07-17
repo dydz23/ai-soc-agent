@@ -1,1 +1,5 @@
-api/lib
+# Ignore everything except the essential files
+node_modules
+.git
+.env
+.env.*

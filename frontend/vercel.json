@@ -9,20 +9,5 @@
       "src": "/api/(analyze|health|quick-ananalyze|sources)",
       "dest": "/api/api-handler?endpoint=$1"
     }
-  ],
-  "functions": {
-    "api/threat-intel.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    },
-    "api/api-handler.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
-  "builds": [
-    { "src": "api/threat-intel.js", "use": "@vercel/node" },
-    { "src": "api/api-handler.js", "use": "@vercel/node" },
-    { "src": "!(api/threat-intel.js|api/api-handler.js)**", "use": "@vercel/static" }
   ]
 }
