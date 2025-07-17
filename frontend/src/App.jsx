@@ -234,8 +234,8 @@ function App() {
     setError(null);
 
     try {
-      // Updated to use Vercel serverless function
-      const res = await fetch('/api/analyze', {
+      // Updated to use consolidated API handler
+      const res = await fetch('/api/api-handler?endpoint=analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

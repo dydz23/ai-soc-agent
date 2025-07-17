@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/threat-intel/(?<source>[^/]+)",
+      "dest": "/api/threat-intel?source=$source"
+    },
+    {
+      "src": "/api/(analyze|health|quick-ananalyze|sources)",
+      "dest": "/api/api-handler?endpoint=$1"
+    }
+  ],
+  "functions": {
+    "api/threat-intel.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    },
+    "api/api-handler.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
+}

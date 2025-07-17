@@ -4,15 +4,64 @@
 import { detectInputType, normalizeIoc, validateIoc, getIocDescription, extractDomainFromUrl, resolveDomain } from '../utils/iocDetection.js';
 import { formatVirusTotal, formatAbuseIPDB, formatShodan, formatOTX, formatThreatFox, formatURLHaus, formatMalwareBazaar, formatIPInfo, formatURLScan } from '../utils/formatters.js';
 import { SOCAnalystLLM } from '../utils/claude.js';
-import { checkVirusTotal } from './threat-intel/virustotal.js';
-import { checkIP } from './threat-intel/abuseipdb.js';
-import { lookupShodan } from './threat-intel/shodan.js';
-import { lookupOTX } from './threat-intel/otx.js';
-import { lookupThreatFox } from './threat-intel/threatfox.js';
-import { lookupURLScan } from './threat-intel/urlscan.js';
-import { lookupURLHaus } from './threat-intel/urlhaus.js';
-import { lookupMalwareBazaar } from './threat-intel/malwarebazaar.js';
-import { lookupIPInfo } from './threat-intel/ipinfo.js';
+// Use the consolidated threat-intel API
+async function checkVirusTotal(query) {
+  return await fetchThreatIntel('virustotal', query);
+}
+
+async function checkIP(ip, domain = null) {
+  return await fetchThreatIntel('abuseipdb', ip, { domain });
+}
+
+async function lookupShodan(query) {
+  return await fetchThreatIntel('shodan', query);
+}
+
+async function lookupOTX(query, type) {
+  return await fetchThreatIntel('otx', query, { type });
+}
+
+async function lookupThreatFox(query) {
+  return await fetchThreatIntel('threatfox', query);
+}
+
+async function lookupURLScan(query) {
+  return await fetchThreatIntel('urlscan', query);
+}
+
+async function lookupURLHaus(query) {
+  return await fetchThreatIntel('urlhaus', query);
+}
+
+async function lookupMalwareBazaar(query) {
+  return await fetchThreatIntel('malwarebazaar', query);
+}
+
+async function lookupIPInfo(query, domain = null) {
+  return await fetchThreatIntel('ipinfo', query, { domain });
+}
+
+// Helper function to call the consolidated threat-intel endpoint
+async function fetchThreatIntel(source, query, additionalParams = {}) {
+  // Build the query string
+  const params = new URLSearchParams();
+  params.append('source', source);
+  params.append('query', query);
+  
+  // Add any additional parameters
+  Object.entries(additionalParams).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) {
+      params.append(key, value);
+    }
+  });
+  
+  // Use relative URL which works in both development and production
+  const response = await fetch(`/api/threat-intel?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`${source} API error: ${response.statusText}`);
+  }
+  return await response.json();
+}
 
 export default async function handler(req, res) {
   // Set CORS headers
