@@ -19,5 +19,10 @@
       "memory": 1024,
       "maxDuration": 10
     }
-  }
+  },
+  "builds": [
+    { "src": "api/threat-intel.js", "use": "@vercel/node" },
+    { "src": "api/api-handler.js", "use": "@vercel/node" },
+    { "src": "!(api/threat-intel.js|api/api-handler.js)**", "use": "@vercel/static" }
+  ]
 }
