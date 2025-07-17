@@ -647,14 +647,23 @@ export async function checkVirusTotal(ioc) {
   // Main handler for threat-intel endpoint
   export default async function handler(req, res) {
     // Support both GET and POST methods
-    const { source, query, type, domain } = req.query || {};
-    const { source: bodySource, ioc, iocType, originalDomain } = req.body || {};
+    // For GET requests, use query parameters
+    // For POST requests, use body parameters
+    let finalSource, finalIoc, finalIocType, finalDomain;
     
-    // Use either query params or body params
-    const finalSource = source || bodySource;
-    const finalIoc = query || ioc;
-    const finalIocType = type || iocType;
-    const finalDomain = domain || originalDomain;
+    if (req.method === 'GET') {
+      const { source, query, type, domain } = req.query || {};
+      finalSource = source;
+      finalIoc = query;
+      finalIocType = type;
+      finalDomain = domain;
+    } else {
+      const { source, ioc, iocType, originalDomain } = req.body || {};
+      finalSource = source;
+      finalIoc = ioc;
+      finalIocType = iocType;
+      finalDomain = originalDomain;
+    }
     
     if (!finalSource || !finalIoc) {
       return res.status(400).json({ error: 'Source and IOC parameters required' });

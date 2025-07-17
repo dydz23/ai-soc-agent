@@ -2,7 +2,18 @@
 import fetch from 'node-fetch';
 import dns from 'dns';
 import { promisify } from 'util';
-import { resolveDomain } from './threat-intel.js';
+import { 
+  resolveDomain,
+  checkVirusTotal,
+  checkIP,
+  lookupShodan,
+  lookupOTX,
+  lookupThreatFox,
+  lookupURLScan,
+  lookupURLHaus,
+  lookupMalwareBazaar,
+  lookupIPInfo
+} from './threat-intel.js';
 
 // Promisify DNS lookup
 const dnsLookup = promisify(dns.lookup);
@@ -196,61 +207,37 @@ function extractDomainFromUrl(url) {
 
 // Helper functions for threat intelligence
 async function fetchThreatIntel(source, query, additionalParams = {}) {
-  // Build the query string
-  const params = new URLSearchParams();
-  params.append('source', source);
-  params.append('query', query);
-  
-  // Add any additional parameters
-  Object.entries(additionalParams).forEach(([key, value]) => {
-    if (value !== null && value !== undefined) {
-      params.append(key, value);
+  // Call the imported functions directly from threat-intel.js
+  try {
+    switch (source) {
+      case 'virustotal':
+        return await checkVirusTotal(query);
+      case 'abuseipdb':
+        return await checkIP(query, additionalParams.domain);
+      case 'shodan':
+        return await lookupShodan(query);
+      case 'otx':
+        return await lookupOTX(query, additionalParams.type);
+      case 'threatfox':
+        return await lookupThreatFox(query);
+      case 'urlscan':
+        return await lookupURLScan(query);
+      case 'urlhaus':
+        return await lookupURLHaus(query);
+      case 'malwarebazaar':
+        return await lookupMalwareBazaar(query);
+      case 'ipinfo':
+        return await lookupIPInfo(query, additionalParams.domain);
+      default:
+        throw new Error(`Unknown threat intelligence source: ${source}`);
     }
-  });
-  
-  // Use relative URL which works in both development and production
-  const response = await fetch(`/api/threat-intel?${params.toString()}`);
-  if (!response.ok) {
-    throw new Error(`${source} API error: ${response.statusText}`);
+  } catch (error) {
+    console.error(`Error in ${source}:`, error);
+    return { error: error.message };
   }
-  return await response.json();
 }
 
-async function checkVirusTotal(query) {
-  return await fetchThreatIntel('virustotal', query);
-}
-
-async function checkIP(ip, domain = null) {
-  return await fetchThreatIntel('abuseipdb', ip, { domain });
-}
-
-async function lookupShodan(query) {
-  return await fetchThreatIntel('shodan', query);
-}
-
-async function lookupOTX(query, type) {
-  return await fetchThreatIntel('otx', query, { type });
-}
-
-async function lookupThreatFox(query) {
-  return await fetchThreatIntel('threatfox', query);
-}
-
-async function lookupURLScan(query) {
-  return await fetchThreatIntel('urlscan', query);
-}
-
-async function lookupURLHaus(query) {
-  return await fetchThreatIntel('urlhaus', query);
-}
-
-async function lookupMalwareBazaar(query) {
-  return await fetchThreatIntel('malwarebazaar', query);
-}
-
-async function lookupIPInfo(query, domain = null) {
-  return await fetchThreatIntel('ipinfo', query, { domain });
-}
+// These functions are now imported from threat-intel.js
 
 // Formatter functions
 function formatVirusTotal(data) {
